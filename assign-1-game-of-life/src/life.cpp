@@ -92,6 +92,7 @@ static void getFileAndInitilize(Grid<int> &board){
                 cout << "Unable to open the file named \"" << filePath << "\". Please select another file." << endl;
                 continue;
             }
+            inputFile.close();
             initializeGridFile(board,inputFile);
             initFlag = true;
         }
