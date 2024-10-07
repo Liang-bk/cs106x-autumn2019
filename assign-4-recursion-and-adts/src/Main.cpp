@@ -173,7 +173,7 @@ namespace {
         }
 
         listStatesUsed(info);
-        visualizeElection(testCase.allStates, info.statesUsed, testCase.year, popularVote(testCase.allStates), info.popularVotesNeeded);
+        //visualizeElection(testCase.allStates, info.statesUsed, testCase.year, popularVote(testCase.allStates), info.popularVotesNeeded);
     }
 
     /* Prompts the user to test out their election code on given years. */

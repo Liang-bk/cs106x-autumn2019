@@ -98,7 +98,7 @@ ElectionTest electionDataFrom(int year, bool shouldSimplify) {
 
     ifstream input;
 
-    string directory = "Elections/Data/";
+    string directory = "res/Elections/Data/";
 
     // figure out correct absolute path to the dictionary, so the demo can run correctly
     string filename = integerToString(year) + ".csv";

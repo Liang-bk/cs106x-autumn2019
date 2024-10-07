@@ -3,6 +3,7 @@
 #include <climits>
 #include <iostream>
 #include "Disasters.h"
+#include "grid.h"
 using namespace std;
 
 /* * * * Doctors Without Orders * * * */
@@ -39,6 +40,13 @@ bool canAllPatientsBeSeen(const Vector<Doctor>& doctors,
                           const Vector<Patient>& patients,
                           Map<string, Set<string>>& schedule) {
     // [TODO: Delete these lines and implement this function!]
+    /*
+     * there are two diffent ways to think about the question:
+     * 1. we allocate the doctors to patiences.
+     * 2. we allocate the patiences to doctors.
+     * it decides which one will be the outer loop.
+     * seems like No.2 is easy to implement.
+    */
     Vector<Doctor> doctorsCopy;
     Vector<Patient> patientsCopy;
     doctorsCopy.addAll(doctors);
@@ -94,6 +102,12 @@ bool canBeMadeDisasterReady(const Map<string, Set<string>>& roadNetwork,
                             int numCities,
                             Set<string>& locations) {
     // [TODO: Delete these lines and implement this function!]
+    /*
+     * give a city, either we color it or color its neighbers
+     * at the beginning, all the cities were non-colored.
+     * once we choose a city and color it, it separate into two sets, the one is covered, the other is non-covered.
+     * so the next city, we have to choose it in the non-covered set.
+    */
     Set<string> cities;
     Vector<string> city = roadNetwork.keys();
     for (string s : city) {
@@ -104,7 +118,38 @@ bool canBeMadeDisasterReady(const Map<string, Set<string>>& roadNetwork,
 
 
 /* * * * Winning the Election * * * */
-
+long long helpFunction(Grid<pair<long long, Vector<State>>> &opt,
+                  int electorVotesNeeded,
+                  const Vector<State>& states,
+                       int stateIndex,
+                       Vector<long long>& sumElectorVotes) {
+    if (stateIndex == states.size() || opt[stateIndex][electorVotesNeeded].first != INT_MAX)
+        return opt[stateIndex][electorVotesNeeded].first;
+    long long maxElectorVotes = sumElectorVotes[sumElectorVotes.size() - 1] - sumElectorVotes[stateIndex] + states[stateIndex].electoralVotes;
+    if (maxElectorVotes < electorVotesNeeded)
+        return INT_MAX;
+    long long opt1 = helpFunction(opt, electorVotesNeeded, states, stateIndex + 1, sumElectorVotes);
+    if (opt[stateIndex][electorVotesNeeded].first > opt1) {
+        opt[stateIndex][electorVotesNeeded].first = opt1;
+        opt[stateIndex][electorVotesNeeded].second = opt[stateIndex + 1][electorVotesNeeded].second;
+    }
+    long long opt2 = states[stateIndex].popularVotes / 2 + 1;
+    if (electorVotesNeeded - states[stateIndex].electoralVotes >= 0) {
+        opt2 += helpFunction(opt, electorVotesNeeded - states[stateIndex].electoralVotes, states, stateIndex + 1, sumElectorVotes);
+        if (opt[stateIndex][electorVotesNeeded].first > opt2) {
+            opt[stateIndex][electorVotesNeeded].first = opt2;
+            opt[stateIndex][electorVotesNeeded].second = opt[stateIndex + 1][electorVotesNeeded - states[stateIndex].electoralVotes].second;
+            opt[stateIndex][electorVotesNeeded].second.add(states[stateIndex]);
+        }
+    } else { // even the electorVotesNeeded less than current state's electoralVotes, we still could choose to win its popularVotes
+            // because we don't know how many popular votes it has , so why not try?
+        if (opt[stateIndex][electorVotesNeeded].first > opt2) {
+            opt[stateIndex][electorVotesNeeded].first = opt2;
+            opt[stateIndex][electorVotesNeeded].second.add(states[stateIndex]);
+        }
+    }
+    return opt[stateIndex][electorVotesNeeded].first;
+}
 /**
  * Given a list of the states in the election, including their popular and electoral vote
  * totals, and the number of electoral votes needed, as well as the index of the lowest-indexed
@@ -117,10 +162,31 @@ bool canBeMadeDisasterReady(const Map<string, Set<string>>& roadNetwork,
  */
 MinInfo minPopularVoteToGetAtLeast(int electoralVotesNeeded, const Vector<State>& states, int minStateIndex) {
     // [TODO: Delete these lines and implement this function!]
-    (void)(electoralVotesNeeded);
-    (void)(states);
-    (void)(minStateIndex);
-    return { 0, {} };
+    /*
+     * it tells the dp function:
+     * dp(i, v) = 1. popularVotes[i] / 2 + 1       if i == n and v <= sumElectorVotes
+     *            2. min{ dp(i + 1, v), dp(i + 1, v - electoralVotes[i])
+     *             + popularVotes[i] / 2 + 1 }     if i < n and electoralVotes[i] <= v <= sumElectorVotes
+     *            3. min{ dp(i + 1, v), populatVotes[i] / 2 + 1 }       if i < n and  v < electoralVotes[i]
+     * note the i will always bigger than 0 becasue i set its minStateIndex to 0.
+    */
+    Vector<long long> sumElectorVotes;
+    Grid<pair<long long, Vector<State>>> opt(states.size(), electoralVotesNeeded + 1, {INT_MAX, Vector<State>()});
+    int n = states.size() - 1;
+    sumElectorVotes.add(states[0].electoralVotes);
+    for (int i = 0; i <= n; i++) {
+        opt[i][0].first = 0;
+        if (i > 0)
+            sumElectorVotes.add(sumElectorVotes[i - 1] + states[i].electoralVotes);
+    }
+    for (int i = 1; i <= states[n].electoralVotes; i++) {
+        opt[n][i].first = (states[n].popularVotes + 2) / 2;
+        opt[n][i].second.add(states[n]);
+    }
+    helpFunction(opt, electoralVotesNeeded, states, minStateIndex, sumElectorVotes);
+
+    MinInfo ans = {opt[0][electoralVotesNeeded].first, opt[0][electoralVotesNeeded].second};
+    return ans;
 }
 
 /**
@@ -133,6 +199,11 @@ MinInfo minPopularVoteToGetAtLeast(int electoralVotesNeeded, const Vector<State>
  */
 MinInfo minPopularVoteToWin(const Vector<State>& states) {
     // [TODO: Delete these lines and implement this function!]
-    (void)(states);
-    return { 0, {} };
+    int electoralVotesNeeded = 2;
+    for (State state : states) {
+        electoralVotesNeeded += state.electoralVotes;
+    }
+    electoralVotesNeeded /= 2;
+
+    return minPopularVoteToGetAtLeast(electoralVotesNeeded, states, 0);
 }
