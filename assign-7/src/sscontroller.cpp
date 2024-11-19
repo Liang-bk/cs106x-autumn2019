@@ -182,11 +182,11 @@ static void interpretCommands(Map<string, cmdFnT>& cmdTable) {
 	while (true) {
 		string command = getLine("Enter command: ");
 		scanner.setInput(command);
-        Expression* t = parseExp(scanner, model);
-        while (scanner.hasMoreTokens()) {
-            cout << scanner.getPosition() << ' ' <<scanner.nextToken() << ' ' << scanner.getPosition() << endl;
-        }
-        continue;
+        // Expression* t = parseExp(scanner, model);
+        // while (scanner.hasMoreTokens()) {
+        //     cout << scanner.getPosition() << ' ' <<scanner.nextToken() << ' ' << scanner.getPosition() << endl;
+        // }
+        // continue;
         string cmdName = toLowerCase(trim(scanner.nextToken()));
 
 		if (!cmdTable.containsKey(cmdName)) {

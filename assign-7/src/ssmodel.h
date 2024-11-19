@@ -113,9 +113,26 @@ public:
 	
 private:
     /* For you to decide */
+    int indexOfCell(const location& cell) const;
+    bool checkAdd(const Vector<location> &others, const location &cell) const;
+    void addDependency(const Vector<location> &others, const location &cell);
+    void removeDependency(const location& cell);
+    void updateOtherCell(const location& cell);
+
+    //
     int _numRows, _numCols;
     SSView *_view;
+    // there are two Maps to store the contents of cells, one for double, one for strings
     std::shared_ptr<EvaluationContext> context;
     Map<std::string, std::string> cellContent;
+    // consider a simple way to store the dependency
+    Vector<Vector<location>> dependency;
+    Vector<Vector<location>> edgeG;
+
+    // we also need to store the expression of every cell, we will use them when cells are updated
+    // I don't know why the Vector in SPL isn't work with unique_ptr, but std::vector worked, so I
+    // use std::vector here.
+    std::vector<std::unique_ptr<Expression>> cellExp;
+    //Vector<std::unique_ptr<Expression>> cellExp;
 };
 

@@ -87,7 +87,7 @@ string TextStringExp::getTextStringValue() const {
  */
 
 IdentifierExp::IdentifierExp(const string& name) {
-   this->name = name;
+   this->name = toUpperCase(name);
 }
 
 double IdentifierExp::eval(EvaluationContext& context) const {
@@ -166,7 +166,7 @@ const Expression *CompoundExp::getRHS() const {
  */
 
 FormulaExp::FormulaExp(const string func, const range cellr) {
-    _func = func;
+    _func = toLowerCase(func);
     _cellr = cellr;
 }
 
@@ -174,8 +174,8 @@ FormulaExp::~FormulaExp() {}
 
 double FormulaExp::eval(EvaluationContext &context) const {
     Vector<double> values;
-    for (char col = _cellr.startCell.col; col < _cellr.stopCell.col; ++col) {
-        for (int row = _cellr.startCell.row; row < _cellr.stopCell.row; ++row) {
+    for (char col = _cellr.startCell.col; col <= _cellr.stopCell.col; ++col) {
+        for (int row = _cellr.startCell.row; row <= _cellr.stopCell.row; ++row) {
             location cell = {col, row};
             string cellname = locationToString(cell);
             if (context.isDefined(cellname)) {
@@ -185,9 +185,8 @@ double FormulaExp::eval(EvaluationContext &context) const {
             }
         }
     }
-    // TODO: call the function named _func
-
-    return 0.0;
+    // call the function named _func
+    return formulaTable[_func](values);
 }
 
 ExpressionType FormulaExp::getType() const {

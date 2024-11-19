@@ -12,6 +12,16 @@
 #include "ssutil.h"
 #include "tokenscanner.h"
 
+typedef double (*formulaF)(const Vector<double> &values);
+const Map<std::string, formulaF> formulaTable = {
+    {"average", average},
+    {"sum", sum},
+    {"product", product},
+    {"max", max},
+    {"min", min},
+    {"median", median},
+    {"stdev", stdev}
+};
 /* Forward reference */
 
 class EvaluationContext;

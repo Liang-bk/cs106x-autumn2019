@@ -18,6 +18,14 @@
 struct location {
 	char col;
     int row;
+    friend bool operator ==(const location &one, const location& two) {
+        return (one.col == two.col && one.row == two.row);
+    }
+
+    friend bool operator <(const location& one, const location& two) {
+        if (one.col == two.col) return one.row < two.row;
+        return one.col < two.col;
+    }
 };
 
 
