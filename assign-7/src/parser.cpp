@@ -25,7 +25,8 @@ static const Set<string> s = {
     "max",
     "min",
     "median",
-    "stdev"
+    "stdev",
+    "mean"
 };
 /**
  * Implementation notes: parseExp

@@ -68,7 +68,8 @@ double TextStringExp::eval(EvaluationContext& /* context */) const {
 }
 
 string TextStringExp::toString() const {
-    return str;
+    // modify this line, return "str", not just str to save it in file.
+    return getTextStringValue();
 }
 
 ExpressionType TextStringExp::getType() const {

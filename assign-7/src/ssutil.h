@@ -80,4 +80,5 @@ double max(const Vector<double> & values);
 double min(const Vector<double> & values);
 double median(const Vector<double> & values);
 double stdev(const Vector<double> & values);
+double mean(const Vector<double> & values);
 

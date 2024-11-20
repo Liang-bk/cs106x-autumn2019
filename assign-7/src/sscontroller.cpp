@@ -64,7 +64,7 @@ static void helpAction(TokenScanner& /* scanner */, SSModel& /* model */) {
 	cout << left << setw(kLeftColumnWidth) 
          << "get <cell>" << "Print contents of cell" << endl;
     cout << left << setw(kLeftColumnWidth)
-         << "clear" << "Clear all the content in the table" << endl;
+         << "clear" << "Clear all the contents in the table" << endl;
 	cout << left << setw(kLeftColumnWidth) 
          << "quit" << "Quit the program" << endl;
 	cout << endl;

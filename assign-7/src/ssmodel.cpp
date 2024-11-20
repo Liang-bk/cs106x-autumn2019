@@ -18,7 +18,15 @@ SSModel::SSModel(int nRows, int nCols, SSView *view) {
     edgeG = Vector<Vector<location>>(_numCols * _numRows, Vector<location>());
     //
     cellExp.clear();
-    for (int i = 0; i < _numCols * _numRows; ++i) cellExp.push_back(nullptr);
+    //for (int i = 0; i < _numCols * _numRows; ++i)
+    // still need to initialize the *context, set all the cells to 0.0 at first
+    for (char col = 0; col < _numCols; ++col) {
+        for (int row = 0; row < _numRows; ++row) {
+            location cell = {(char)(col + 'A'), row + 1};
+            context->setValue(locationToString(cell), 0.0);
+            cellExp.push_back(nullptr);
+        }
+    }
 }
 
 SSModel::~SSModel() {}
@@ -302,10 +310,86 @@ void SSModel::setCellFromScanner(const string& cellname, TokenScanner& scanner) 
     cellExp[indexOfCell(cell)] = std::move(exp);
 }
 
-void SSModel::printCellInformation(const string& cellname) const {}
+void SSModel::printCellInformation(const string& cellname) const {
+    string cellName = toUpperCase(cellname);
+    location cell;
+    // cell formula:
+    stringToLocation(cellName, cell);
+    int cellIndex = indexOfCell(cell);
+    cout << "Cell Formula: " << cellName << " = " << cellExp[cellIndex]->toString() << '\n';
+    // cell dependency:
+    cout << "Cells that " << cellName << " directly depends on: ";
+    for (int i = 0; i < dependency[cellIndex].size(); ++i) {
+        cout << locationToString(dependency[cellIndex][i]) << ' ';
+    }
+    cout << "\n";
+    // depends on cell:
+    cout << "Cells that directly depend on " << cellName << " : ";
+    for (int i = 0; i < edgeG[cellIndex].size(); ++i) {
+        cout << locationToString(edgeG[cellIndex][i]) << ' ';
+    }
+    cout << "\n";
+}
 
-void SSModel::writeToStream(ostream& outfile) const {}
+void SSModel::writeToStream(ostream& outfile) const {
+    // save in a series of set statement like:
+    // A2 = "Beat Cal"
+    // B2 = 13.5
+    // C2 = (B2 * (3 + A1))
+    for (char col = 0; col < _numCols; ++col) {
+        for (int row = 0; row < _numRows; ++row) {
+            location cell = {(char)(col + 'A'), row + 1};
+            int cellIndex = indexOfCell(cell);
+            if (cellExp[cellIndex] != nullptr) {
+                outfile << locationToString(cell) << " = " << cellExp[cellIndex]->toString() << '\n';
+            }
+        }
+    }
+}
 
-void SSModel::readFromStream(istream& infile) {}
+void SSModel::readFromStream(istream& infile) {
+    this->clearAllCells();
+    TokenScanner scanner;
+    scanner.ignoreWhitespace();
+    scanner.scanNumbers();
+    scanner.scanStrings();
+    string line;
+    while (getline(infile, line)) {
+        scanner.setInput(line);
+        // all the cmd is set
+        if (!scanner.hasMoreTokens())
+            error("The set command requires a cell name and a value");
+        string cellname = scanner.nextToken();
+        if (!this->nameIsValid(cellname))
+            error("Invalid cell name: " + cellname);
+        if (scanner.nextToken() != "=")
+            error("= expected");
+        this->setCellFromScanner(cellname, scanner);
+    }
+}
 
-void SSModel::clearAllCells() {}
+void SSModel::clearAllCells() {
+    // reset all the private variables
+    // context.reset();
+    // context = make_shared<EvaluationContext>();
+    cellContent.clear();
+    // consider this way to clear the contents, _view->displayEmptySpreadsheet() spend too much time
+    for (char col = 0; col < _numCols; ++col) {
+        for (int row = 0; row < _numRows; ++row) {
+            location cell = {(char)(col + 'A'), row + 1};
+            int cellIndex = indexOfCell(cell);
+            context->setValue(locationToString(cell), 0.0);
+            if (cellExp[cellIndex] != nullptr) {
+                _view->displayCell(locationToString(cell), "");
+                cellExp[cellIndex].reset();
+            }
+        }
+    }
+    for (int i = 0; i < _numCols * _numRows; ++i) {
+        edgeG[i].clear();
+        dependency[i].clear();
+        //cellExp[i].reset();
+    }
+
+    //_view->displayEmptySpreadsheet();
+}

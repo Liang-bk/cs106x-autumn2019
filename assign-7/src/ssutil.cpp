@@ -83,3 +83,8 @@ double stdev(const Vector<double>& values) {
 	return sqrt((values.size() * sumsquares - sum*sum)/(values.size() * values.size()));
 }
 
+
+double mean(const Vector<double> & values) {
+    return average(values);
+}
+

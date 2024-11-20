@@ -20,7 +20,8 @@ const Map<std::string, formulaF> formulaTable = {
     {"max", max},
     {"min", min},
     {"median", median},
-    {"stdev", stdev}
+    {"stdev", stdev},
+    {"mean", mean}
 };
 /* Forward reference */
 
